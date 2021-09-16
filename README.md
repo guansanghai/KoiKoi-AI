@@ -1,14 +1,14 @@
 # Koi-Koi AI
 
-Learning based AI for playing multi-round Koi-Koi hanafuda card games. Just for fun.
+Learning based AI for playing multi-round Koi-Koi hanafuda card games.
 
 ![Play Interface](/markdown/koikoi_play_interface.png)
 
 ## Platform
 
 * Python
-* PyTorch 1.7.1 or higher
-* PySimpleGUI (for pvc playing interface)
+* PyTorch
+* PySimpleGUI (for the interface playing vs AI)
 
 ## About Koi-Koi Hanafuda Card Games
 
@@ -18,17 +18,17 @@ Learning based AI for playing multi-round Koi-Koi hanafuda card games. Just for 
 
 ## Rules & Yaku List
 
-Koi-Koi is consisted by multiple rounds and both players start with equal points. In every round, the dealer plays first and two players discard and draw to pair and collect cards by turn until someone forms Yakus successfully. Then, he can end this round to receive points from the opponent, or claim koi-koi and continues this round to earn more yakus and points. The detailed rules and Yaku list of this project is the same as PC game [KoiKoi-Japan](https://store.steampowered.com/app/364930/KoiKoi_Japan_Hanafuda_playing_cards/) on Steam.
+Koi-Koi is consisted by multiple rounds and both players start with equal points. In every round, two players discard and draw to pair and collect cards by turn until someone forms Yakus successfully. Then, he can end this round to receive points from the opponent, or claim koi-koi and continues this round to earn more yakus and points. The detailed rules and Yaku list of this project is the same as PC game [KoiKoi-Japan](https://store.steampowered.com/app/364930/KoiKoi_Japan_Hanafuda_playing_cards/) on Steam.
 
 ![Yaku List](/markdown/koikoi_yaku.png)
 
 ## Network Model & Dataset
 
-The model is a card-state self-attention based neural network with multiple Transformer encoder layers, and is trained by supervised learning. The dataset of 200 multi-round Koi-Koi game records is also provided. 
+The model is a card-state self-attention based neural network with multiple Transformer encoder layers, and is trained by supervised learning. The dataset of 200 eight-round Koi-Koi game records is also provided. 
 
 ![Model](/markdown/koikoi_net_model.png)
 
 ## Future Work
 
-Improve the performance with reinforcement learning...
+Try to improve the performance with reinforcement learning...
 
