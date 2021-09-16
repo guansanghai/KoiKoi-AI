@@ -95,10 +95,13 @@ def record_dict_to_samples(record_dict,record_name):
 
 
 if __name__ == '__main__':
-    folder = 'gamerecords_dataset'
-    filename_list = [str(ii) for ii in range(1,11)]
+    record_folder = 'gamerecords_dataset'
+    filename_list = [str(ii)+'.json' for ii in range(1,201)]
+    for path in ['dataset','dataset/discard','dataset/pick','dataset/koikoi']:
+        if not os.path.isdir(path):
+            os.mkdir(path)
     for filename in filename_list:
-        path = f'{folder}/{filename}.json'
+        path = f'{record_folder}/{filename}'
         with open(path,'r') as f: 
             record_dict = json.load(f)
         record_dict_to_samples(record_dict,filename)
