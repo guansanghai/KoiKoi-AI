@@ -2,7 +2,7 @@
 
 Learning based AI for playing multi-round Koi-Koi hanafuda card games.
 
-![Play Interface](/markdown/koikoi_play_interface.png)
+![Play Interface](/markdown/Kapture.gif)
 
 ## Platform
 
