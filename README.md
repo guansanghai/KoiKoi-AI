@@ -22,13 +22,4 @@ Koi-Koi is consisted by multiple rounds and both players start with equal points
 
 ![Yaku List](/markdown/koikoi_yaku.png)
 
-## Network Model & Dataset
-
-The model is a card-state self-attention based neural network with multiple Transformer encoder layers, and is trained by supervised learning. The dataset of 200 eight-round Koi-Koi game records is also provided. 
-
-![Model](/markdown/koikoi_net_model.png)
-
-## Future Work
-
-Try to improve the performance with reinforcement learning...
 
