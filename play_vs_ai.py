@@ -14,7 +14,7 @@ import torch # 1.8.1
 
 # Demo for playing 8-round koi-koi games vs trained AI
 your_name = 'Player'
-ai_name = 'RL-WP' # 'SL', 'RL-Point', 'RL-WP'
+ai_name = 'RL-Point' # 'SL', 'RL-Point', 'RL-WP'
 record_path = 'gamerecords_player/'
 
 # 
