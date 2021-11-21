@@ -138,7 +138,7 @@ class KoiKoiRoundStateBase():
             random.shuffle(card)
             self.hand[1] = sorted(card[0:8])
             self.hand[2] = sorted(card[8:16])
-            self.field_slot = sorted(card[16:24])+[[0,0] for _ in range(8)] # 16 slots on board
+            self.field_slot = sorted(card[16:24])+[[0,0] for _ in range(10)]
             self.stock = card[24:]
             # check hand-4 and board-4          
             flag = True
@@ -311,22 +311,23 @@ class KoiKoiRoundStateBase():
         turn = str(self.turn_16)
         if self.state == 'init':
             self.log['basic'] = {}
-            self.log['basic']['initHand1'] = self.hand[1]
-            self.log['basic']['initHand2'] = self.hand[2]
-            self.log['basic']['initBoard'] = self.field
-            self.log['basic']['initPile'] = self.stock
+            self.log['basic']['initHand1'] = self.hand[1].copy()
+            self.log['basic']['initHand2'] = self.hand[2].copy()
+            self.log['basic']['initBoard'] = self.field.copy()
+            self.log['basic']['initPile'] = self.stock.copy()
+            self.log['basic']['Dealer'] = self.dealer
         elif self.state == 'discard':
             self.log['turn'+turn] = {}
             self.log['turn'+turn]['playerInTurn'] = self.turn_player
-            self.log['turn'+turn]['discardCard'] = self.show[0]
-            self.log['turn'+turn]['pairCard'] = self.pairing_card
+            self.log['turn'+turn]['discardCard'] = self.show[0].copy()
+            self.log['turn'+turn]['pairCard'] = self.pairing_card.copy()
         elif self.state == 'discard-pick':
-            self.log['turn'+turn]['collectCard'] = self.collect
+            self.log['turn'+turn]['collectCard'] = self.collect.copy()
         elif self.state == 'draw':
-            self.log['turn'+turn]['drawCard'] = self.show[0]
-            self.log['turn'+turn]['pairCard2'] = self.pairing_card
+            self.log['turn'+turn]['drawCard'] = self.show[0].copy()
+            self.log['turn'+turn]['pairCard2'] = self.pairing_card.copy()
         elif self.state == 'draw-pick':
-            self.log['turn'+turn]['collectCard2'] = self.collect
+            self.log['turn'+turn]['collectCard2'] = self.collect.copy()
         elif self.state == 'koikoi':
             self.log['turn'+turn]['isKoiKoi'] = content
         elif self.state == 'round-over':
@@ -450,7 +451,7 @@ class KoiKoiGameStateBase():
         return
     
     def __init_record(self):
-        self.log['info'] = {'startTime':time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()), 
+        self.log['info'] = {'startTime':time.strftime("%Y-%m-%d-%H-%M-%S",time.localtime()), 
                             'endTime':None,
                             'player1Name':self.player_name[1],
                             'player2Name':self.player_name[2],
@@ -523,6 +524,20 @@ class KoiKoiRoundState(KoiKoiRoundStateBase):
         self.__write_card_log_array('draw-pick')
         return output
     
+    def step(self, action):
+        assert self.state in ['discard','discard-pick','draw','draw-pick','koikoi']
+        if self.state == 'discard':
+            self.discard(action)
+        elif self.state == 'discard-pick':
+            self.discard_pick(action)            
+        elif self.state == 'draw':
+            self.draw(action)            
+        elif self.state == 'draw-pick':
+            self.draw_pick(action)            
+        elif self.state == 'koikoi':
+            self.claim_koikoi(action)
+        return
+    
     def __write_card_log_array(self,state):
         
         def card_log_turn_dict():
@@ -555,7 +570,7 @@ class KoiKoiRoundState(KoiKoiRoundStateBase):
         elif state == 'discard-pick':
             if self.collect != []:
                 pair_by_discard_collect = np.array(card_to_multi_hot(self.field_collect))
-                pair_by_discard = np.array(card_to_multi_hot(self.pairing_card))
+                pair_by_discard = np.array(card_to_multi_hot(self.log[f'turn{turn}']['pairCard']))
                 self.card_log_dict[turn]['CardPairedByDiscardCollect'] \
                     = pair_by_discard_collect
                 self.card_log_dict[turn]['CardPairedByDiscardUncollect'] \
@@ -572,12 +587,24 @@ class KoiKoiRoundState(KoiKoiRoundStateBase):
         elif state == 'draw-pick':
             if self.collect != []:
                 pair_by_discard_collect = np.array(card_to_multi_hot(self.field_collect))
-                pair_by_discard = np.array(card_to_multi_hot(self.pairing_card))
+                pair_by_discard = np.array(card_to_multi_hot(self.log[f'turn{turn}']['pairCard2']))
                 self.card_log_dict[turn]['CardPairedByDrawnCollect'] \
-                    = np.array(card_to_multi_hot(self.field_collect))
+                    = pair_by_discard_collect
                 self.card_log_dict[turn]['CardPairedByDrawnUncollect'] \
                     = pair_by_discard - pair_by_discard_collect
         return
+    
+    @property
+    def action_mask(self):
+        if self.state == 'discard':
+            mask = card_to_multi_hot(self.hand[self.turn_player])
+        elif self.state in ['discard-pick', 'draw-pick']:
+            mask = card_to_multi_hot(self.pairing_card)
+        elif self.state == 'koikoi':
+            mask = [1,1]
+        else:
+            mask = []
+        return np.array(mask)
     
     @property
     def card_log_array(self):
@@ -594,12 +621,20 @@ class KoiKoiRoundState(KoiKoiRoundStateBase):
     
     @property
     def card_init_position_array(self):
+        # There was a bug caused by the shallow copy of initHand and initPile in self.log
+        # As the result, this fuction in fact got the current hand and unseen card
+        # Although the bug has been fixed, for supporting the trained models, keep it as is
         f_dict = {}
+        '''
         f_dict['CardInMyHand'] = card_to_multi_hot(
             self.log['basic'][f'initHand{self.turn_player}'])
         f_dict['CardInBoard'] = card_to_multi_hot(self.log['basic']['initBoard'])
         f_dict['CardUnseen'] = card_to_multi_hot(
             self.log['basic'][f'initHand{self.idle_player}'] + self.log['basic']['initPile'])
+        '''
+        f_dict['CardInMyHand'] = card_to_multi_hot(self.hand[self.turn_player])
+        f_dict['CardInBoard'] = card_to_multi_hot(self.log['basic']['initBoard'])
+        f_dict['CardUnseen'] = card_to_multi_hot(self.unseen_card[self.turn_player])
         f_array = np.vstack([value for key,value in f_dict.items()])
         return f_array    
     
@@ -609,6 +644,8 @@ class KoiKoiRoundState(KoiKoiRoundStateBase):
         f_dict['CardInMyHand'] = card_to_multi_hot(self.hand[self.turn_player])
         f_dict['CardInMyCollect'] = card_to_multi_hot(self.pile[self.turn_player])
         f_dict['CardInBoard'] = card_to_multi_hot(self.field)
+        # Bug Confirmed, for supporting the trained models, keep it as is
+        # f_dict['CardInOpCollect'] = card_to_multi_hot(self.pile[self.idle_player])
         f_dict['CardInOpCollect'] = card_to_multi_hot(self.pile[self.turn_player])
         f_dict['CardUnseen'] = card_to_multi_hot(self.unseen_card[self.turn_player])
         f_array = np.vstack([value for key,value in f_dict.items()])
@@ -662,9 +699,8 @@ class KoiKoiRoundState(KoiKoiRoundStateBase):
         f_array_card_state = np.concatenate([value for key,value in f_dict.items()])
         f_array_card_state = np.tile(f_array_card_state,(48,1)).T
         f_array_card_key = np.array([card_to_multi_hot(card_set) for _,card_set in card_dict.items()])
-        f_array = np.vstack([f_array_card_key,f_array_card_state])
+        f_array = np.vstack([f_array_card_state,f_array_card_key])
         return f_array
-
     
     
 class KoiKoiGameState(KoiKoiGameStateBase):
@@ -708,10 +744,16 @@ class KoiKoiGameState(KoiKoiGameStateBase):
         f_array = np.concatenate([value for key,value in f_dict.items()])
         f_array = np.tile(f_array,(48,1)).T
         return f_array
+    
+    @property
+    def reserve_array(self):
+        f_array = np.zeros([17,48])
+        return f_array
         
     @property
     def feature_tensor(self):
         f = np.vstack([
+            self.reserve_array,
             self.game_status_array,
             self.round_state.yaku_status_array,
             self.round_state.card_suit_array,
@@ -719,6 +761,12 @@ class KoiKoiGameState(KoiKoiGameStateBase):
             self.round_state.card_current_position_array,
             self.round_state.card_pairing_state_array,
             self.round_state.card_log_array])
+        if self.round_state.state == 'koikoi':
+            f_token = np.zeros([f.shape[0],2])
+            f_token[0:137,:] = f[0:137,0:2]
+            f_token[0,0] = 1
+            f_token[1,1] = 1
+            f = np.hstack([f_token,f])
         f = torch.Tensor(f)
         return f
 

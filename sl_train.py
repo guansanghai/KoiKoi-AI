@@ -14,34 +14,30 @@ import numpy as np
 import os
 import pickle
 
-from koikoinet import DiscardModel, PickModel, KoiKoiModel
+from koikoinet2L import DiscardModel, PickModel, KoiKoiModel
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+model_save_dir = 'model_sl'
+
+def get_filename_list(dataset_path, record_num_list):
+    filename_list = []
+    for root, dirs, files in os.walk(dataset_path):
+        for file in files:
+            if file.endswith('.pickle') and int(file.split('_')[0]) in record_num_list:
+                filename_list.append(file)
+    return filename_list
 
 class KoiKoiSLDataset(data.Dataset):
     def __init__(self, dataset_path, record_num_list):
         self.data = []
-        self.dataset_path = dataset_path
-        self.record_num_list = record_num_list
-
-        for ii,filename in enumerate(self.__get_filename_list()):
+        filename_list = get_filename_list(dataset_path, record_num_list)
+        for ii,filename in enumerate(filename_list):
             with open(dataset_path + filename, 'rb') as f:
                 sample = pickle.load(f)
             self.data.append(sample)
-            
             if (ii+1) % 1000 == 0:
                 print(f'{ii+1} samples loaded...')
         print(f'All {ii+1} samples loaded over!')
-        
-        self.n_feature = sample['feature'].size(0)
-    
-    def __get_filename_list(self):
-        filename_list = []
-        for root, dirs, files in os.walk(self.dataset_path):
-            for file in files:
-                if file.endswith('.pickle') and int(file.split('_')[0]) in self.record_num_list:
-                    filename_list.append(file)
-        return filename_list
     
     def __getitem__(self, index):
         sample = self.data[index]
@@ -67,19 +63,19 @@ class KoiKoiSLTrainer():
         test_record_index =  [ii for ii in range(1,record_num+1) if ii % k_fold == test_fold]
         test_dataset = KoiKoiSLDataset(dataset_path, test_record_index)
         self.test_loader = data.DataLoader(dataset=test_dataset, batch_size=len(test_dataset))
-        self.n_feature = test_dataset.n_feature
         return
 
-    def init_model(self, net_model, transfer_model_path=None):
-        self.model = net_model(self.n_feature).to(device)
+    def init_model(self, net_model, transfer_model_path=None, lr=1e-3):
+        self.model = net_model().to(device)
         if transfer_model_path is not None:
             trained_model = torch.load(transfer_model_path)
             model_state_dict = self.model.state_dict()
             update_state_dict = {k:v for k,v in trained_model.state_dict().items() \
                 if k in model_state_dict.keys()}
             model_state_dict.update(update_state_dict)
-            self.model.load_state_dict(model_state_dict)  
-        self.optimizer = torch.optim.Adam(self.model.parameters())
+            self.model.load_state_dict(model_state_dict)
+            print(f'Trained model {transfer_model_path} loaded!')
+        self.optimizer = torch.optim.Adam(self.model.parameters(),lr=lr)
         self.criterion = torch.nn.CrossEntropyLoss().to(device)                  
         return
 
@@ -94,7 +90,7 @@ class KoiKoiSLTrainer():
 
             if acc > best_acc:
                 best_acc = acc
-                path = f'trained_model/model_{self.task_name}_fold_{self.k_fold}_{self.test_fold}.pt'
+                path = f'{model_save_dir}/{self.task_name}_fold_{self.k_fold}_{self.test_fold}.pt'
                 torch.save(self.model, path)
                 print(f'Model {path} saved!')
         return
@@ -127,13 +123,16 @@ class KoiKoiSLTrainer():
 
 
 if __name__ == '__main__':
+    pass
+    
+    '''
     task_name = 'discard'
     dataset_path = f'dataset/{task_name}/'
     net_model = {'discard':DiscardModel,'pick':PickModel,'koikoi':KoiKoiModel}[task_name]
-    trained_model_path = None #'trained_model/model_discard_fold_5_0.pt'
+    trained_model_path = None
 
     trainer = KoiKoiSLTrainer(task_name)
     trainer.init_dataset(dataset_path, k_fold=5, test_fold=0, batch_size=512)
     trainer.init_model(net_model, trained_model_path)
     trainer.train(epoch_num=20)
-
+    '''

@@ -309,7 +309,7 @@ def UpdateYakuGUI(window, game_state):
         for i in range(1,len(yakuList)+1):
             window[pre+'Yaku'+str(i)].update(yakuList[i-1][1])
             window[pre+'YakuPt'+str(i)].update(str(yakuList[i-1][2]))
-            if yakuList[i-1][0] == 14 and yakuList[i-1][2] >= 4:
+            if yakuList[i-1][0] == 16 and yakuList[i-1][2] >= 4:
                 window[pre+'YakuPt'+str(i)].update('x'+str(yakuList[i-1][2]-2))            
         if len(yakuList) > 0:
             window[pre+'Yaku'+str(len(yakuList)+1)].update('--------TOTAL--------')

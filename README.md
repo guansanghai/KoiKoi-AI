@@ -1,10 +1,10 @@
 # Koi-Koi AI
 
-Learning based AI for playing multi-round Koi-Koi hanafuda card games.
+Learning based AI for playing multi-round Koi-Koi hanafuda card games. ([@guansanghai](https://github.com/guansanghai))
 
 ![Play Interface](/markdown/Kapture.gif)
 
-## Platform
+## Environment
 
 * Python
 * PyTorch
@@ -21,5 +21,4 @@ Learning based AI for playing multi-round Koi-Koi hanafuda card games.
 Koi-Koi is consisted by multiple rounds and both players start with equal points. In every round, two players discard and draw to pair and collect cards by turn until someone forms Yakus successfully. Then, he can end this round to receive points from the opponent, or claim koi-koi and continues this round to earn more yakus and points. The detailed rules and Yaku list of this project is the same as PC game [KoiKoi-Japan](https://store.steampowered.com/app/364930/KoiKoi_Japan_Hanafuda_playing_cards/) on Steam.
 
 ![Yaku List](/markdown/koikoi_yaku.png)
-
 
