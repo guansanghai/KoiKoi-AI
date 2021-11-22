@@ -6,8 +6,8 @@ Learning based AI for playing multi-round Koi-Koi hanafuda card games. ([@guansa
 
 ## Environment
 
-* Python
-* PyTorch
+* Python 3
+* PyTorch 1.8.1
 * PySimpleGUI (for the interface playing vs AI)
 
 ## About Koi-Koi Hanafuda Card Games
