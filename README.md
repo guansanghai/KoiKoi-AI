@@ -1,6 +1,6 @@
 # Koi-Koi AI
 
->S. Guan, J. Wang, R. Zhu, J. Qian and Z. Wei, **“Learning to Play Koi-Koi Hanafuda Card Games with Transformers,”** *IEEE Transactions on Artificial Intelligence*, 2023. [doi: 10.1109/TAI.2023.3240674](https://ieeexplore.ieee.org/document/10032777). [\[PDF\]](https://github.com/guansanghai/KoiKoi-AI/raw/main/TAI.2023.3240674.pdf)
+>S. Guan, J. Wang, R. Zhu, J. Qian and Z. Wei, **“Learning to Play Koi-Koi Hanafuda Card Games with Transformers,”** *IEEE Transactions on Artificial Intelligence*, vol. 4, no. 6, pp. 1449-1460, 2023. [doi: 10.1109/TAI.2023.3240674](https://ieeexplore.ieee.org/document/10032777). [\[PDF\]](https://github.com/guansanghai/KoiKoi-AI/raw/main/TAI.2023.3240674.pdf)
 
 Learning based AI for playing multi-round Koi-Koi hanafuda card games. ([@guansanghai](https://github.com/guansanghai))
 
